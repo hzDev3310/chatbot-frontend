@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { LuMessageCirclePlus } from "react-icons/lu";
 import { FaIndustry } from "react-icons/fa";
 import api from "../api/api";
+import useChatStore from '../store/chatStore';
 
 const ChatHistory = ({ userId, onSelectChat }) => {
+  const { setCurrentChatId } = useChatStore();
   const [chatHistory, setChatHistory] = useState({
     today: [],
     yesterday: [],
@@ -49,13 +51,31 @@ const ChatHistory = ({ userId, onSelectChat }) => {
               key={chatId}
               className="btn btn-light w-100 text-start mb-2 p-3 rounded-3"
               onClick={() => {
-                console.log("Selected chat:", chat.messages);
-                const formattedMessages = chat.messages.map(msg => ({
-                  text: msg.prompt || msg.response?.response || msg.response,
-                  sender: msg.sender_type === "user" ? 'user' : 'assistant',
-                  timestamp: new Date(msg.created_at).toLocaleTimeString(),
-                  messageId: msg._id || msg.id
-                }));
+                const formattedMessages = [];
+                chat.messages.forEach(msg => {
+                  // Add user message (prompt)
+                  if (msg.prompt) {
+                    formattedMessages.push({
+                      text: msg.prompt,
+                      sender: "user",
+                      timestamp: new Date(msg.created_at).toLocaleTimeString(),
+                      messageId: msg.id,
+                      rating: msg.rating || 0
+                    });
+                  }
+                  // Add assistant message (response)
+                  if (msg.response) {
+                    formattedMessages.push({
+                      text: typeof msg.response === 'string' ? msg.response : msg.response.response,
+                      sender: "assistant",
+                      timestamp: new Date(msg.created_at).toLocaleTimeString(),
+                      messageId: msg.id,
+                      rating: msg.rating || 0
+                    });
+                  }
+                });
+                
+                setCurrentChatId(chatId); // Save chat ID in store
                 onSelectChat({
                   chat_id: chatId,
                   messages: formattedMessages,

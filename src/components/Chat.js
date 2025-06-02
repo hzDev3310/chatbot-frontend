@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import useChatStore from '../store/chatStore';
 
 const Chat = () => {
-  const { chatMessages, setChatMessages, addMessage } = useChatStore();
+  const { chatMessages, setChatMessages, addMessage, currentChatId } = useChatStore();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,6 +29,8 @@ const Chat = () => {
       text: input,
       sender: "user",
       timestamp: new Date().toLocaleTimeString(),
+      messageId: Date.now().toString(),
+      rating: 0
     };
     addMessage(userMessage);
     setInput("");
@@ -38,14 +40,15 @@ const Chat = () => {
       const response = await api.generateResponse({
         prompt: input,
         user_id: userId,
-        chat_id: selectedChat?.chat_id
+        chat_id: currentChatId // Use currentChatId from store
       });
 
       const botMessage = {
-        text: response.response?.response || "No response",
-        sender: 'assistant',
+        text: response.response?.response,
+        sender: "assistant",
         timestamp: new Date().toLocaleTimeString(),
-        messageId: response.chat_id
+        messageId: response.chat_id || response.id,
+        rating: 0
       };
       addMessage(botMessage);
     } catch (error) {
