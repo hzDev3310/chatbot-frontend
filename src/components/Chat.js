@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import useChatStore from '../store/chatStore';
 
 const Chat = () => {
-  const { chatMessages, setChatMessages } = useChatStore();
+  const { chatMessages, setChatMessages, addMessage } = useChatStore();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,7 +30,7 @@ const Chat = () => {
       sender: "user",
       timestamp: new Date().toLocaleTimeString(),
     };
-    setChatMessages((prev) => [...prev, userMessage]);
+    addMessage(userMessage);
     setInput("");
 
     try {
@@ -41,14 +41,13 @@ const Chat = () => {
         chat_id: selectedChat?.chat_id
       });
 
-      // Properly extract the response text from the response object
       const botMessage = {
-        text: response.response?.response || response.response || "No response",
-        sender: "assistant",
+        text: response.response?.response || "No response",
+        sender: 'assistant',
         timestamp: new Date().toLocaleTimeString(),
-        messageId: response.message_id,
+        messageId: response.chat_id
       };
-      setChatMessages((prev) => [...prev, botMessage]);
+      addMessage(botMessage);
     } catch (error) {
       setError("Failed to generate response");
       console.error("Error generating response:", error);
@@ -69,8 +68,8 @@ const Chat = () => {
     <div className="container-fluid h-100">
       <div className="row h-100">
         <div className="col-md-3 p-0 border-end">
-          <ChatHistory 
-            userId={userId}  
+          <ChatHistory
+            userId={userId}
             onSelectChat={(chat) => {
               if (chat?.messages) {
                 setChatMessages(chat.messages);
@@ -79,14 +78,14 @@ const Chat = () => {
                 setChatMessages([]);
                 setSelectedChat(null);
               }
-            }} 
+            }}
           />
         </div>
         <div className="col-md-9 d-flex flex-column h-100 p-4">
           <div className="flex-grow-1 overflow-auto mb-4">
             {error && <div className="alert alert-danger">{error}</div>}
-            {chatMessages.map((msg, index) => (
-              <div key={index} className={`message ${msg.sender === "user"  && "bg-primary text-white"} mb-3 p-3 border rounded`}>
+            {Array.isArray(chatMessages) && chatMessages.map((msg, index) => (
+              <div key={index} className={`message ${msg.sender === "user" && "bg-primary text-white"} mb-3 p-3 border rounded`}>
                 <div className="message-header d-flex justify-content-between align-items-center mb-2">
                   <span className="sender fw-bold">
                     {msg.sender === "user" ? "You" : "AI Assistant"}
@@ -113,7 +112,7 @@ const Chat = () => {
                       <FiStar className="me-1" /> Rate
                     </button>
                   </div>
-                 
+
                 )}
               </div>
             ))}
