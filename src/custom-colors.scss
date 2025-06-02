@@ -1,12 +1,12 @@
 // Custom color variables to override Bootstrap defaults
 $primary: #4348bd;
-$secondary: #6c757d;
+$secondary: #bec5c9;
 $success: #28a745;
 $danger: #dc3545;
 $warning: #ffc107;
 $info: #17a2b8;
-$light: #f8f9fa;
+$light: #a0a6d1;
 $dark: #343a40;
-
+    
 // Import Bootstrap after custom variables
 @import "~bootstrap/scss/bootstrap";
